@@ -19,12 +19,14 @@ import (
 )
 
 type Version struct {
-	Name    string `yaml:"name"`
-	Image   string `yaml:"image"`
-	Version string `yaml:"version"`
-	Latest  bool   `yaml:"latest"`
-	Source  string `yaml:"source"`
-	Native  bool   `yaml:"native"` // indicates that it's included in the source image
+	Name     string   `yaml:"name"`
+	Image    string   `yaml:"image"`
+	Version  string   `yaml:"version"`
+	Latest   bool     `yaml:"latest"`
+	Source   string   `yaml:"source"`
+	Native   bool     `yaml:"native"` // indicates that it's included in the source image
+	Priority int      `yaml:"priority"`
+	Aliases  []string `yaml:"aliases"`
 }
 
 type Manifest []Version
@@ -70,23 +72,26 @@ func (m Manifest) builds() (Manifest, error) {
 }
 
 func (m Manifest) generate() error {
+
+	// Order manifest by priority
+	sort.Slice(m, func(i, j int) bool {
+		return m[i].Priority < m[j].Priority
+	})
+
 	sets := make(map[string][]Version)
-	keys := make([]string, 0)
+	order := make([]string, 0)
 
 	// Build order matters for image sets, not version.
 	for _, v := range m {
 		if len(sets[v.Name]) == 0 {
-			keys = append(keys, v.Name)
+			order = append(order, v.Name)
 			sets[v.Name] = make([]Version, 0)
 		}
 		sets[v.Name] = append(sets[v.Name], v)
 	}
 
-	// Enforce order
-	sort.Strings(keys)
-
-	for _, k := range keys {
-		vers := sets[k]
+	for _, n := range order {
+		vers := sets[n]
 
 		var wg sync.WaitGroup
 		wg.Add(len(vers))
@@ -176,38 +181,63 @@ func (v *Version) latest() string {
 
 func (v *Version) rmi() {
 	log.Println("--- removing:", v.tag())
-	rmi := exec.Command("docker", "rmi", "-f", v.tag())
-	v.execute(rmi, true)
+	v.execute(exec.Command("docker", "rmi", "-f", v.tag()), true)
 
 	if v.Latest {
 		log.Println("--- removing: ", v.imageName()+":latest")
-		rmi := exec.Command("docker", "rmi", "-f", v.imageName()+":latest")
-		v.execute(rmi, true)
+		v.execute(exec.Command("docker", "rmi", "-f", v.imageName()+":latest"), true)
+	}
+
+	for _, a := range v.aliases() {
+		log.Println("--- removing: ", a)
+		v.execute(exec.Command("docker", "rmi", "-f", a), true)
 	}
 }
 
 func (v *Version) build() {
 	log.Println("--- building:", v.tag())
-	bld := exec.Command("docker", "build", v.dockerbase(), "-t", v.tag())
-	v.execute(bld, false)
+	v.execute(exec.Command("docker", "build", v.dockerbase(), "-t", v.tag()), false)
 	log.Println("--- complete:", v.tag())
 
 	if v.Latest {
-		log.Println("--- tagging: ", v.imageName()+":latest")
-		tag := exec.Command("docker", "tag", v.tag(), v.imageName()+":latest")
-		v.execute(tag, false)
+		log.Println("--- tagging: ", v.latest())
+		v.execute(exec.Command("docker", "tag", v.tag(), v.latest()), false)
 	}
+
+	for _, a := range v.aliases() {
+		log.Println("--- tagging: ", a)
+		v.execute(exec.Command("docker", "tag", v.tag(), a), false)
+	}
+}
+
+func (v *Version) aliases() []string {
+	aliases := make([]string, 0)
+
+	if len(v.Aliases) > 0 {
+		for _, alias := range v.Aliases {
+			aliases = append(aliases, fmt.Sprintf("%s:%s", alias, v.Version))
+
+			if v.Latest {
+				aliases = append(aliases, fmt.Sprintf("%s:latest", alias))
+			}
+		}
+	}
+
+	return aliases
 }
 
 func (v *Version) push() {
 	log.Println("--- pushing:", v.tag())
-	push := exec.Command("docker", "push", v.tag())
-	v.execute(push, false)
+	v.execute(exec.Command("docker", "push", v.tag()), false)
 
 	if v.Latest {
 		log.Println("--- pushing: ", v.latest())
-		push = exec.Command("docker", "push", v.latest())
-		v.execute(push, false)
+		v.execute(exec.Command("docker", "push", v.latest()), false)
+	}
+
+	for _, a := range v.aliases() {
+		log.Println("--- pushing: ", a)
+		v.execute(exec.Command("docker", "push", a), false)
 	}
 }
 
@@ -235,6 +265,10 @@ func (v *Version) verify() {
 
 		if v.Latest {
 			check(v.latest())
+		}
+
+		for _, a := range v.aliases() {
+			check(a)
 		}
 	}
 }

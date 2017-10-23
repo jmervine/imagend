@@ -11,7 +11,11 @@
 # - source: defines a source image to use in template
 # - latest: also tag the build with a "latest" tag
 # - native: can optionally be passed to a template to noop, indicating that
-#           the source image contains what's requested in image and version
+#       the source image contains what's requested in image and version
+# - priority: determines image level build priorty, this will only order by
+#       name, as duplicate names with varying versions are built concurrently
+# - aliases: list of other image names to use as well. If latest, the alias
+#       image name will get the latest tag as well
 # -------------------------------------------------------------------------
 
 # base images
@@ -20,6 +24,9 @@
   version: base_image_version
   source: base_image_source:tag
   latest: true
+  priority: -1
+  aliases:
+  - my/other-base
 
 # sub-image
 - name: subimage
