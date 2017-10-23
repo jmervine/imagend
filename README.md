@@ -1,6 +1,8 @@
 # imagend
 Generate many docker images from a manifest, using templates.
 
+> ### This is a prototype and shouldn't be used by anyome but me right now.
+
 ```
 go run *.go -h
 ```
@@ -9,6 +11,8 @@ See manifest.yml.sample and templates/Dockerfile.sample.tmpl for examples.
 
 ##### TODO
 
+- **Currently all refrerences to `jmervine/herokudev-` are hard coded,
+  which makes this completely useless for anything but that.**
 - Because the current alpha sorting won't always be good enough, add the
   concept of dependencies. The basic idea is to have an array that holds
   order and another for storing images that have been built. Then I

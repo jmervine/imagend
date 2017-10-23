@@ -9,9 +9,9 @@ import (
 
 const (
 	// defaults
-	defaultOutdir   = "../"
-	defaultTmpldir  = "../templates"
-	defaultManifile = "../manifest.yml"
+	defaultOutdir   = "."
+	defaultTmpldir  = "templates"
+	defaultManifile = "manifest.yml"
 	defaultImage    = ""
 	defaultVersion  = ""
 	defaultRemove   = true
