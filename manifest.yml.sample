@@ -1,0 +1,26 @@
+# Order matters when it comes to building images, currently though, they're
+# build in alphabetical order. Which works because "base" needs to be first
+# and then "node", after that, it doesn't matter.
+# -------------------------------------------------------------------------
+#
+# key definitions
+# -------------------------------------------------------------------------
+# - image: defines the image name to be generated
+# - version: defines the version to be used as a tag and in a template
+# - source: defines a source image to use in template
+# - latest: also tag the build with a "latest" tag
+# - native: can optionally be passed to a template to noop, indicating that
+#           the source image contains what's requested in image and version
+# -------------------------------------------------------------------------
+
+# base images
+- image: base
+  version: base_image_version
+  source: base_image_source:tag
+  latest: true
+
+# sub-image
+- image: subimage
+  version: sub_image_version
+  source: base_image:base_image_version
+  #native: true

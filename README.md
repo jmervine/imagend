@@ -5,6 +5,8 @@ Generate many docker images from a manifest, using templates.
 go run *.go -h
 ```
 
+See manifest.yml.sample and templates/Dockerfile.sample.tmpl for examples.
+
 ##### TODO
 
 - Because the current alpha sorting won't always be good enough, add the
