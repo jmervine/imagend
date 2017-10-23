@@ -11,8 +11,8 @@ See manifest.yml.sample and templates/Dockerfile.sample.tmpl for examples.
 
 ##### TODO
 
-- **Currently all refrerences to `jmervine/herokudev-` are hard coded,
-  which makes this completely useless for anything but that.**
+- Oh yeah, don't forget tests... some tests might be good if this is
+  going to be portable in any way.
 - Because the current alpha sorting won't always be good enough, add the
   concept of dependencies. The basic idea is to have an array that holds
   order and another for storing images that have been built. Then I

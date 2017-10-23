@@ -5,7 +5,8 @@
 #
 # key definitions
 # -------------------------------------------------------------------------
-# - image: defines the image name to be generated
+# - name:  defines the overall build name
+# - image: defines the image name to be generated, name is used if omitted
 # - version: defines the version to be used as a tag and in a template
 # - source: defines a source image to use in template
 # - latest: also tag the build with a "latest" tag
@@ -14,13 +15,15 @@
 # -------------------------------------------------------------------------
 
 # base images
-- image: base
+- name: base
+  image: my/base
   version: base_image_version
   source: base_image_source:tag
   latest: true
 
 # sub-image
-- image: subimage
+- name: subimage
+  image: my/subimage
   version: sub_image_version
   source: base_image:base_image_version
   #native: true

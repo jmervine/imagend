@@ -18,9 +18,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const baseImageName = "jmervine/herokudev-"
-
 type Version struct {
+	Name    string `yaml:"name"`
 	Image   string `yaml:"image"`
 	Version string `yaml:"version"`
 	Latest  bool   `yaml:"latest"`
@@ -38,6 +37,7 @@ func loadManifest(file string) (Manifest, error) {
 	}
 
 	err = yaml.Unmarshal(data, &m)
+
 	return m, err
 }
 
@@ -50,7 +50,7 @@ func (m Manifest) builds() (Manifest, error) {
 	}
 
 	for _, v := range m {
-		if image != "" && v.Image == image {
+		if image != "" && (v.Name == image || v.Image == image) {
 			if version == "" || (version != "" && version == v.Version) {
 				builds = append(builds, v)
 				continue
@@ -75,11 +75,11 @@ func (m Manifest) generate() error {
 
 	// Build order matters for image sets, not version.
 	for _, v := range m {
-		if len(sets[v.Image]) == 0 {
-			keys = append(keys, v.Image)
-			sets[v.Image] = make([]Version, 0)
+		if len(sets[v.Name]) == 0 {
+			keys = append(keys, v.Name)
+			sets[v.Name] = make([]Version, 0)
 		}
-		sets[v.Image] = append(sets[v.Image], v)
+		sets[v.Name] = append(sets[v.Name], v)
 	}
 
 	// Enforce order
@@ -140,11 +140,11 @@ func (v *Version) render() {
 }
 
 func (v *Version) tag() string {
-	return baseImageName + v.Image + ":" + v.Version
+	return fmt.Sprintf("%s:%s", v.imageName(), v.Version)
 }
 
 func (v *Version) template() string {
-	return template("Dockerfile." + v.Image)
+	return template("Dockerfile." + v.Name)
 }
 
 func template(name string) string {
@@ -156,7 +156,7 @@ func template(name string) string {
 }
 
 func (v *Version) dockerbase() string {
-	b := path.Join(outdir, v.Image+"-"+v.Version)
+	b := path.Join(outdir, v.Name+"-"+v.Version)
 	if !exists(b) {
 		if err := os.Mkdir(b, 0755); err != nil {
 			log.Fatal(err)
@@ -170,8 +170,8 @@ func (v *Version) dockerfile() string {
 	return path.Join(v.dockerbase(), "Dockerfile")
 }
 
-func (v *Version) imageName() string {
-	return baseImageName + v.Image
+func (v *Version) latest() string {
+	return fmt.Sprintf("%s:latest", v.imageName())
 }
 
 func (v *Version) rmi() {
@@ -205,17 +205,17 @@ func (v *Version) push() {
 	v.execute(push, false)
 
 	if v.Latest {
-		log.Println("--- pushing: ", v.imageName()+":latest")
-		push = exec.Command("docker", "push", v.imageName()+":latest")
+		log.Println("--- pushing: ", v.latest())
+		push = exec.Command("docker", "push", v.latest())
 		v.execute(push, false)
 	}
 }
 
 func (v *Version) verify() {
-	if v.Image != "base" {
+	if v.Name != "base" {
 		check := func(t string) {
 			log.Println("--- verifying: ", t)
-			x := fmt.Sprintf("docker run --rm %s %s --version", t, v.Image)
+			x := fmt.Sprintf("docker run --rm %s %s --version", t, v.Name)
 			cmd := exec.Command("sh", "-c", x)
 			out, err := cmd.CombinedOutput()
 			if err != nil {
@@ -234,7 +234,7 @@ func (v *Version) verify() {
 		check(v.tag())
 
 		if v.Latest {
-			check(v.imageName() + ":latest")
+			check(v.latest())
 		}
 	}
 }
@@ -276,4 +276,12 @@ func (v *Version) execute(cmd *exec.Cmd, ignoreErrors bool) {
 	if err != nil && !ignoreErrors {
 		log.Fatal(err)
 	}
+}
+
+func (v *Version) imageName() string {
+	if v.Image == "" {
+		return v.Name
+	}
+
+	return v.Image
 }
