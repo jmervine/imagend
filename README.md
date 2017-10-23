@@ -1,4 +1,4 @@
-# imagend `(ima)ge (gen)erator for (d)docker`
+# `imagend (ima)ge (gen)erator for (d)docker`
 
 Generate many docker images from a manifest, using templates.
 
