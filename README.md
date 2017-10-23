@@ -1,7 +1,9 @@
 # imagend
 Generate many docker images from a manifest, using templates.
 
-> ### This is a prototype and shouldn't be used by anyome but me right now.
+> **This is a prototype and shouldn't be used by anyome but me right now.
+> it's currently not very flexible, and probably won't support your project.
+> If you're up to it, though, I'm happy to review PRs.**
 
 ```
 go run *.go -h
@@ -24,6 +26,3 @@ See manifest.yml.sample and templates/Dockerfile.sample.tmpl for examples.
   the array is empty.
 - Add alias support, e.g. jmervine/herokudev-base -> jmervine/herokudev.
   This should also support all versions including latest.
-- Extrat generator in to it's own repo for use with other projects, e.g.
-  jmervine/mini\*
-- Consider supporting `herokudev-rails` again.
