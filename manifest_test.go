@@ -90,6 +90,25 @@ func TestManifest_builds_with_invalid_version(t *testing.T) {
 	m.builds()
 }
 
+func TestManifest_sort(t *testing.T) {
+	assert := assert.New(t)
+
+	m := Manifest{
+		Version{Name: "image1", Version: "1"},
+		Version{Name: "image1", Version: "2"},
+		Version{Name: "image2", Version: "2", Priority: -1},
+	}
+
+	order, sets := m.sort()
+
+	assert.Equal([]string{"image2", "image1"}, order)
+	assert.Equal(2, len(sets["image1"]))
+	assert.Equal(1, len(sets["image2"]))
+	assert.Equal("image1", sets["image1"][0].Name)
+	assert.Equal("image1", sets["image1"][1].Name)
+	assert.Equal("image2", sets["image2"][0].Name)
+}
+
 func TestVersion_imageName(t *testing.T) {
 	assert := assert.New(t)
 

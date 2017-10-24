@@ -69,14 +69,14 @@ func (m Manifest) builds() Manifest {
 	return builds
 }
 
-func (m Manifest) generate() {
+func (m Manifest) sort() ([]string, map[string][]Version) {
+	order := make([]string, 0)
+	sets := make(map[string][]Version)
+
 	// Order manifest by priority
 	sort.Slice(m, func(i, j int) bool {
 		return m[i].Priority < m[j].Priority
 	})
-
-	sets := make(map[string][]Version)
-	order := make([]string, 0)
 
 	// Build order matters for image sets, not version.
 	for _, v := range m {
@@ -87,6 +87,12 @@ func (m Manifest) generate() {
 
 		sets[v.Name] = append(sets[v.Name], v)
 	}
+
+	return order, sets
+}
+
+func (m Manifest) generate() {
+	order, sets := m.sort()
 
 	for _, n := range order {
 		vers := sets[n]
