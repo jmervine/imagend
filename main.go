@@ -1,74 +1,128 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/urfave/cli"
 )
 
 const (
-	// defaults
-	defaultOutdir   = "."
-	defaultTmpldir  = "templates"
-	defaultManifile = "manifest.yml"
-	defaultImage    = ""
-	defaultVersion  = ""
-	defaultRemove   = true
-	defaultVerify   = true
-	defaultPush     = true
-	defaultBuild    = true
+	VERSION = "0.0.1"
 )
 
 var (
 	// configurations
-	outdir   string
-	tmpldir  string
-	manifile string
-	image    string
-	version  string
-	remove   bool
-	verify   bool
-	push     bool
-	build    bool
+	outdir   = "."
+	tmpldir  = "templates"
+	manifile = "manifest.yml"
+
+	remove     bool
+	push       bool
+	verify     bool
+	skipVerify bool
+	skipBuild  bool
+	skipGen    bool
+
+	image   string
+	version string
 )
 
-func init() {
-	flag.StringVar(&outdir, "r", defaultOutdir, "root directory, used in saving generated Dockerfiles")
-	flag.StringVar(&tmpldir, "t", defaultTmpldir, "dockerfile templates directory")
-	flag.StringVar(&manifile, "m", defaultManifile, "manifest file path")
-	flag.StringVar(&image, "l", defaultImage, "image (e.g. language or base) to build, empty will build all")
-	flag.StringVar(&version, "v", defaultVersion, "version to build, requires image, empty will build all")
-	flag.BoolVar(&remove, "x", defaultRemove, "remove previous images, if they exist")
-	flag.BoolVar(&verify, "c", defaultVerify, "verify built image(s)")
-	flag.BoolVar(&push, "p", defaultPush, "push built image(s)")
-	flag.BoolVar(&build, "b", defaultBuild, "build image(s)")
-}
-
 func main() {
-	parseArgs()
+	app := cli.NewApp()
+	app.Name = "imagend"
+	app.Usage = "(ima)ge (gen)erator for (d)ocker"
+	app.Version = VERSION
 
-	log.Println("loading manifest:", manifile)
-	loadManifest(manifile).builds().generate()
-}
-
-// parseArgs parses arguments using the flag package
-func parseArgs() {
-	flag.Parse()
-
-	if !build { // don't remove if not building
-		remove = false
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:        "o",
+			Usage:       "base directory for used in outputting generated Dockerfiles",
+			EnvVar:      "IMAGEND_OUTDIR",
+			Value:       outdir,
+			Destination: &outdir,
+		},
+		cli.StringFlag{
+			Name:        "t",
+			Usage:       "dockerfile templates directory",
+			Destination: &tmpldir,
+			Value:       tmpldir,
+			EnvVar:      "IMAGEND_TEMPLATES",
+		},
+		cli.StringFlag{
+			Name:        "m",
+			Usage:       "manifest.yml file path",
+			Destination: &manifile,
+			Value:       manifile,
+			EnvVar:      "IMAGEND_MANIFEST",
+		},
+		cli.StringFlag{
+			Name:        "i",
+			Usage:       "image (e.g. language or base) to build, empty builds all",
+			Destination: &image,
+		},
+		cli.StringFlag{
+			Name:        "V",
+			Usage:       "version to build, requires 'i' flag, empty builds all",
+			Destination: &version,
+		},
+		cli.BoolFlag{
+			Name:        "r",
+			Usage:       "remove, if they exists",
+			Destination: &remove,
+		},
+		cli.BoolFlag{
+			Name:        "skip-gen",
+			Usage:       "skip template generation",
+			Destination: &skipGen,
+		},
+		cli.BoolFlag{
+			Name:        "skip-verify",
+			Usage:       "skip image verification check",
+			Destination: &skipVerify,
+		},
+		cli.BoolFlag{
+			Name:        "skip-build",
+			Usage:       "skip image build step, prevents removal",
+			Destination: &skipBuild,
+		},
+		cli.BoolFlag{
+			Name:        "p",
+			Usage:       "push images to docker hub",
+			Destination: &push,
+		},
+		cli.BoolFlag{
+			Name:        "verify",
+			Usage:       "verify images, same as '--skip-gen --skip-build --p=false -r=false'",
+			Destination: &verify,
+		},
 	}
 
-	outdir = expand(outdir, true)
-	tmpldir = expand(tmpldir, false)
-	manifile = expand(manifile, false)
+	app.Action = func(c *cli.Context) error {
+		if verify {
+			skipBuild = true
+			skipGen = true
+			push = false
+		}
 
-	if image == "" && version != "" {
-		log.Println("--- ERROR image is required when a version is specified\n---")
-		flag.Usage()
-		os.Exit(1)
+		outdir = expand(outdir, true)
+		tmpldir = expand(tmpldir, false)
+		manifile = expand(manifile, false)
+
+		if image == "" && version != "" {
+			log.Println("--- ERROR image is required when a version is specified\n---")
+			cli.ShowAppHelpAndExit(c, 1)
+		}
+
+		log.Println("loading manifest:", manifile)
+		loadManifest(manifile).builds().generate()
+
+		return nil
 	}
+
+	app.Run(os.Args)
+
 }
 
 func expand(path string, mkdir bool) string {

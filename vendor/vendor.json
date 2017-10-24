@@ -33,6 +33,12 @@
 			"revisionTime": "2017-08-14T20:04:35Z"
 		},
 		{
+			"checksumSHA1": "cQfZ+JnB/SweDbrGSTVE07/k8Vw=",
+			"path": "github.com/urfave/cli",
+			"revision": "7bc6a0acffa589f415f88aca16cc1de5ffd66f9c",
+			"revisionTime": "2017-10-14T20:27:26Z"
+		},
+		{
 			"checksumSHA1": "RDJpJQwkF012L6m/2BJizyOksNw=",
 			"path": "gopkg.in/yaml.v2",
 			"revision": "eb3733d160e74a9c7e442f435eb3bea458e1d19f",

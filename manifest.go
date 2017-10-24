@@ -97,18 +97,24 @@ func (m Manifest) generate() {
 			go func(v Version) {
 				defer wg.Done()
 				log.Println("IMAGE:", v.tag())
-				log.Println("--- log:", v.logpath())
-				v.render()
 
-				if remove {
+				if !skipGen || !skipBuild || remove || push {
+					log.Println("- log:", v.logpath())
+				}
+
+				if !skipGen {
+					v.render()
+				}
+
+				if remove && !skipBuild {
 					v.rmi()
 				}
 
-				if build {
+				if !skipBuild {
 					v.build()
 				}
 
-				if verify {
+				if !skipVerify {
 					v.verify()
 				}
 
@@ -123,6 +129,7 @@ func (m Manifest) generate() {
 }
 
 func (v *Version) render() {
+	log.Println("--- rendering:", v.dockerfile())
 	t, err := tmpl.ParseFiles(v.template())
 	if err != nil {
 		log.Fatal(err)
