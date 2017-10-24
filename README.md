@@ -14,8 +14,6 @@ See manifest.yml.sample and templates/Dockerfile.sample.tmpl for examples.
 
 ##### TODO
 
-- Oh yeah, don't forget tests... some tests might be good if this is
-  going to be portable in any way.
 - Support tagging minor and major version, e.g. node:8.x and node:8.
   Could probably split on the "." and then remove one, tag, repeat until
   the array is empty.
