@@ -117,17 +117,13 @@ func TestVersion_tags(t *testing.T) {
 	v := Version{Name: "name", Version: "1"}
 	assert.Equal([]string{"name:1"}, v.tags())
 
-	// Latest
-	v = Version{Image: "image", Version: "1", Latest: true}
-	assert.Equal([]string{"image:1", "image:latest"}, v.tags())
-
 	// Aliases
 	v = Version{Name: "name", Version: "1", Aliases: []string{"my/name"}}
 	assert.Equal([]string{"name:1", "my/name:1"}, v.tags())
 
-	// Aliases + Latest
-	v = Version{Name: "name", Version: "1", Aliases: []string{"my/name"}, Latest: true}
-	assert.Equal([]string{"name:1", "name:latest", "my/name:1", "my/name:latest"}, v.tags())
+	// Tags
+	v = Version{Image: "image", Version: "1.1", Tags: []string{"latest", "1"}}
+	assert.Equal([]string{"image:1.1", "image:latest", "image:1"}, v.tags())
 }
 
 func TestVersion_template(t *testing.T) {

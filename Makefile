@@ -6,7 +6,7 @@ test: $(GOVENDOR) vet
 vet: $(GOVENDOR)
 	govendor vet +local
 
-install: test
+install:
 	govendor install +local
 
 build:

@@ -7,14 +7,15 @@ Generate many docker images from a manifest, using templates.
 > If you're up to it, though, I'm happy to review PRs.**
 
 ```
-go run *.go -h
+# w/ make
+make
+make install
+
+# w/o make
+go get -v github.com/kardianos/govendor
+govendor test -v +local
+govendor install +local
 ```
 
 See manifest.yml.sample and templates/Dockerfile.sample.tmpl for examples.
 
-##### TODO
-
-- Support tagging minor and major version, e.g. node:8.x and node:8.
-  Could probably split on the "." and then remove one, tag, repeat until
-  the array is empty.
-- Use `github.com/urfave/cli` for CLI over `flag` built in.

@@ -21,11 +21,11 @@ type Version struct {
 	Name     string   `yaml:"name"`
 	Image    string   `yaml:"image"`
 	Version  string   `yaml:"version"`
-	Latest   bool     `yaml:"latest"`
 	Source   string   `yaml:"source"`
 	Native   bool     `yaml:"native"` // indicates that it's included in the source image
 	Priority int      `yaml:"priority"`
 	Aliases  []string `yaml:"aliases"`
+	Tags     []string `yaml:"tags"`
 }
 
 type Manifest []Version
@@ -84,6 +84,7 @@ func (m Manifest) generate() {
 			order = append(order, v.Name)
 			sets[v.Name] = make([]Version, 0)
 		}
+
 		sets[v.Name] = append(sets[v.Name], v)
 	}
 
@@ -145,21 +146,6 @@ func (v *Version) render() {
 		log.Fatal(err)
 	}
 }
-
-//func (v *Version) semvers() []string {
-//vers := make([]string, 0)
-//parts := strings.Split(v.Version, ".")
-
-//for _ = range parts {
-//parts = parts[:len(parts)-1]
-//if len(parts) > 0 {
-//vers = append(vers, strings.Join(parts, "."))
-//}
-
-//}
-
-//return vers
-//}
 
 func (v *Version) rmi() {
 	for _, tag := range v.tags() {
@@ -263,9 +249,7 @@ func (v *Version) tag() string {
 
 func (v *Version) tags() []string {
 	subtags := []string{v.Version}
-	if v.Latest {
-		subtags = append(subtags, "latest")
-	}
+	subtags = append(subtags, v.Tags...)
 
 	images := []string{v.imageName()}
 	for _, alias := range v.Aliases {
