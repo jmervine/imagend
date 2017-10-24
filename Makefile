@@ -1,9 +1,12 @@
 GOVENDOR=$(shell echo "$(GOBIN)/govendor")
 
-vet: $(GOVENDOR)
-	govendor vet -v +local
+test: $(GOVENDOR) vet
+	govendor test -v +local
 
-install: vet
+vet: $(GOVENDOR)
+	govendor vet +local
+
+install: test
 	govendor install +local
 
 $(GOVENDOR):

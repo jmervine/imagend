@@ -49,17 +49,7 @@ func main() {
 	parseArgs()
 
 	log.Println("loading manifest:", manifile)
-	manifest, err := loadManifest(manifile)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if manifest, err = manifest.builds(); err != nil {
-		log.Fatal(err)
-	}
-
-	manifest.generate()
+	loadManifest(manifile).builds().generate()
 }
 
 // parseArgs parses arguments using the flag package

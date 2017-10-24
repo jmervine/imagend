@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -31,25 +30,24 @@ type Version struct {
 
 type Manifest []Version
 
-func loadManifest(file string) (Manifest, error) {
+func loadManifest(file string) Manifest {
 	var m Manifest
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
-		return m, err
+		log.Fatal(err)
 	}
 
 	err = yaml.Unmarshal(data, &m)
 
-	return m, err
+	return m
 }
 
-func (m Manifest) builds() (Manifest, error) {
-	builds := make(Manifest, 0)
-
+func (m Manifest) builds() Manifest {
 	if image == "" && version == "" {
-		builds = m
-		return builds, nil
+		return m
 	}
+
+	builds := make(Manifest, 0)
 
 	for _, v := range m {
 		if image != "" && (v.Name == image || v.Image == image) {
@@ -62,17 +60,16 @@ func (m Manifest) builds() (Manifest, error) {
 
 	if len(builds) == 0 {
 		if version != "" {
-			return builds, errors.New("ERROR requested version not found: " + version)
+			log.Fatal("ERROR requested version not found: ", version)
+		} else {
+			log.Fatal("ERROR requested image not found: ", image)
 		}
-
-		return builds, errors.New("ERROR requested image not found: " + image)
 	}
 
-	return builds, nil
+	return builds
 }
 
-func (m Manifest) generate() error {
-
+func (m Manifest) generate() {
 	// Order manifest by priority
 	sort.Slice(m, func(i, j int) bool {
 		return m[i].Priority < m[j].Priority
@@ -123,8 +120,6 @@ func (m Manifest) generate() error {
 
 		wg.Wait()
 	}
-
-	return nil
 }
 
 func (v *Version) render() {
@@ -144,53 +139,25 @@ func (v *Version) render() {
 	}
 }
 
-func (v *Version) tag() string {
-	return fmt.Sprintf("%s:%s", v.imageName(), v.Version)
-}
+//func (v *Version) semvers() []string {
+//vers := make([]string, 0)
+//parts := strings.Split(v.Version, ".")
 
-func (v *Version) template() string {
-	return template("Dockerfile." + v.Name)
-}
+//for _ = range parts {
+//parts = parts[:len(parts)-1]
+//if len(parts) > 0 {
+//vers = append(vers, strings.Join(parts, "."))
+//}
 
-func template(name string) string {
-	t := path.Join(tmpldir, name+".tmpl")
-	if !exists(t) {
-		log.Fatal("ERROR template file not found: ", t)
-	}
-	return t
-}
+//}
 
-func (v *Version) dockerbase() string {
-	b := path.Join(outdir, v.Name+"-"+v.Version)
-	if !exists(b) {
-		if err := os.Mkdir(b, 0755); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	return b
-}
-
-func (v *Version) dockerfile() string {
-	return path.Join(v.dockerbase(), "Dockerfile")
-}
-
-func (v *Version) latest() string {
-	return fmt.Sprintf("%s:latest", v.imageName())
-}
+//return vers
+//}
 
 func (v *Version) rmi() {
-	log.Println("--- removing:", v.tag())
-	v.execute(exec.Command("docker", "rmi", "-f", v.tag()), true)
-
-	if v.Latest {
-		log.Println("--- removing: ", v.imageName()+":latest")
-		v.execute(exec.Command("docker", "rmi", "-f", v.imageName()+":latest"), true)
-	}
-
-	for _, a := range v.aliases() {
-		log.Println("--- removing: ", a)
-		v.execute(exec.Command("docker", "rmi", "-f", a), true)
+	for _, tag := range v.tags() {
+		log.Println("--- removing:", tag)
+		v.execute(exec.Command("docker", "rmi", "-f", tag), true)
 	}
 }
 
@@ -199,76 +166,39 @@ func (v *Version) build() {
 	v.execute(exec.Command("docker", "build", v.dockerbase(), "-t", v.tag()), false)
 	log.Println("--- complete:", v.tag())
 
-	if v.Latest {
-		log.Println("--- tagging: ", v.latest())
-		v.execute(exec.Command("docker", "tag", v.tag(), v.latest()), false)
-	}
-
-	for _, a := range v.aliases() {
-		log.Println("--- tagging: ", a)
-		v.execute(exec.Command("docker", "tag", v.tag(), a), false)
-	}
-}
-
-func (v *Version) aliases() []string {
-	aliases := make([]string, 0)
-
-	if len(v.Aliases) > 0 {
-		for _, alias := range v.Aliases {
-			aliases = append(aliases, fmt.Sprintf("%s:%s", alias, v.Version))
-
-			if v.Latest {
-				aliases = append(aliases, fmt.Sprintf("%s:latest", alias))
-			}
+	for _, tag := range v.tags() {
+		if tag != v.tag() {
+			log.Println("--- tagging: ", tag)
+			v.execute(exec.Command("docker", "tag", v.tag(), tag), false)
 		}
 	}
-
-	return aliases
 }
 
 func (v *Version) push() {
-	log.Println("--- pushing:", v.tag())
-	v.execute(exec.Command("docker", "push", v.tag()), false)
-
-	if v.Latest {
-		log.Println("--- pushing: ", v.latest())
-		v.execute(exec.Command("docker", "push", v.latest()), false)
-	}
-
-	for _, a := range v.aliases() {
-		log.Println("--- pushing: ", a)
-		v.execute(exec.Command("docker", "push", a), false)
+	for _, tag := range v.tags() {
+		log.Println("--- pushing: ", tag)
+		v.execute(exec.Command("docker", "push", tag), false)
 	}
 }
 
 func (v *Version) verify() {
 	if v.Name != "base" {
-		check := func(t string) {
-			log.Println("--- verifying: ", t)
-			x := fmt.Sprintf("docker run --rm %s %s --version", t, v.Name)
+		for _, tag := range v.tags() {
+			log.Println("--- verifying: ", tag)
+			x := fmt.Sprintf("docker run --rm %s %s --version", tag, v.Name)
 			cmd := exec.Command("sh", "-c", x)
 			out, err := cmd.CombinedOutput()
 			if err != nil {
-				log.Println("------ failure:", t)
+				log.Println("------ failure:", tag)
 				log.Fatal("------- with: ", err.Error())
 			}
 
 			if strings.Contains(string(out), v.Version) {
-				log.Println("---- verified: ", t)
+				log.Println("---- verified: ", tag)
 			} else {
-				log.Println("------ failure:", t)
+				log.Println("------ failure:", tag)
 				log.Fatal("------- with \"", string(out), "\"")
 			}
-		}
-
-		check(v.tag())
-
-		if v.Latest {
-			check(v.latest())
-		}
-
-		for _, a := range v.aliases() {
-			check(a)
 		}
 	}
 }
@@ -318,4 +248,52 @@ func (v *Version) imageName() string {
 	}
 
 	return v.Image
+}
+
+func (v *Version) tag() string {
+	return fmt.Sprintf("%s:%s", v.imageName(), v.Version)
+}
+
+func (v *Version) tags() []string {
+	subtags := []string{v.Version}
+	if v.Latest {
+		subtags = append(subtags, "latest")
+	}
+
+	images := []string{v.imageName()}
+	for _, alias := range v.Aliases {
+		images = append(images, alias)
+	}
+
+	tags := make([]string, 0)
+	for _, image := range images {
+		for _, st := range subtags {
+			tags = append(tags, fmt.Sprintf("%s:%s", image, st))
+		}
+	}
+
+	return tags
+}
+
+func (v *Version) template() string {
+	t := path.Join(tmpldir, "Dockerfile."+v.Name+".tmpl")
+	if !exists(t) {
+		log.Fatal("ERROR template file not found: ", t)
+	}
+	return t
+}
+
+func (v *Version) dockerbase() string {
+	b := path.Join(outdir, v.Name+"-"+v.Version)
+	if !exists(b) {
+		if err := os.Mkdir(b, 0755); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return b
+}
+
+func (v *Version) dockerfile() string {
+	return path.Join(v.dockerbase(), "Dockerfile")
 }

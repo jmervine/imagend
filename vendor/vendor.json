@@ -3,11 +3,35 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "bBPshqRUvW7MtZp8UcjRxdD2KJ0=",
+			"path": "github.com/bouk/monkey",
+			"revision": "b96e337f6e5b36906584cd0cf9803bbab09284f7",
+			"revisionTime": "2017-09-01T20:25:51Z"
+		},
+		{
+			"checksumSHA1": "mrz/kicZiUaHxkyfvC/DyQcr8Do=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "ecdeabc65495df2dec95d7c4a4c3e021903035e5",
+			"revisionTime": "2017-10-02T20:02:53Z"
+		},
+		{
 			"checksumSHA1": "sxluRJHmkjYbZbKN2Ol9V86quHU=",
 			"path": "github.com/go-yaml/yaml",
 			"revision": "bec87e4332aede01fb63a4ab299d8af28480cd96",
 			"revisionTime": "2014-09-22T21:32:25Z"
+		},
+		{
+			"checksumSHA1": "LuFv4/jlrmFNnDb/5SCSEPAM9vU=",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",
+			"revisionTime": "2016-01-10T10:55:54Z"
+		},
+		{
+			"checksumSHA1": "mGbTYZ8dHVTiPTTJu3ktp+84pPI=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "2aa2c176b9dab406a6970f6a55f513e8a8c8b18f",
+			"revisionTime": "2017-08-14T20:04:35Z"
 		}
 	],
-	"rootPath": "github.com/jmervine/docker-herokudev/gen"
+	"rootPath": "github.com/jmervine/imagend"
 }
