@@ -96,7 +96,7 @@ func main() {
 		cli.BoolFlag{
 			Name:        "push-only",
 			Usage:       "only push images, don't generate or build, will verify",
-			Destination: &push,
+			Destination: &pushOnly,
 		},
 		cli.BoolFlag{
 			Name:        "verify",
