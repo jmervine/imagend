@@ -20,6 +20,7 @@ var (
 
 	remove     bool
 	push       bool
+	pushOnly   bool
 	verify     bool
 	skipVerify bool
 	skipBuild  bool
@@ -93,6 +94,11 @@ func main() {
 			Destination: &push,
 		},
 		cli.BoolFlag{
+			Name:        "push-only",
+			Usage:       "only push images, don't generate or build, will verify",
+			Destination: &push,
+		},
+		cli.BoolFlag{
 			Name:        "verify",
 			Usage:       "verify images, same as '--skip-gen --skip-build --p=false -r=false'",
 			Destination: &verify,
@@ -104,6 +110,12 @@ func main() {
 			skipBuild = true
 			skipGen = true
 			push = false
+		}
+
+		if pushOnly {
+			skipBuild = true
+			skipGen = true
+			push = true
 		}
 
 		outdir = expand(outdir, true)
