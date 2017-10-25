@@ -5,7 +5,8 @@ Generate many docker images from a manifest, using templates.
 ### Build / Install
 
 ```
-got get -v -u github.com/jmervine/imagend
+$ go get -u github.com/jmervine/imagend
+$ imagend --help
 ```
 
 ### Overview
@@ -38,7 +39,6 @@ generate Dockerfiles, build and verify images, and push them to [https://hub.doc
 >
 > However you can always pass the `--skip-verify` flag, to skip this step.
 >
-
 
 ### The Manifest
 
