@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/urfave/cli"
 )
@@ -146,23 +145,4 @@ func main() {
 
 	app.Run(os.Args)
 
-}
-
-func expand(path string, mkdir bool) string {
-	var err error
-	path, err = filepath.Abs(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !exists(path) {
-		if !mkdir {
-			log.Fatal("--- ERROR file or directory not found: ", path)
-		}
-		if err := os.Mkdir(path, 0755); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	return path
 }
