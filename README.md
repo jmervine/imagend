@@ -2,6 +2,10 @@
 ---
 Generate many docker images from a manifest, using templates.
 
+This was built for my [docker-herokudev](https://github.com/jmervine/docker-herokudev)
+project. Check it out for a working example.
+
+---
 ### Build / Install
 
 ```
