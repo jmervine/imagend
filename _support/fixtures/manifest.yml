@@ -2,10 +2,18 @@
   image: test/one
   version: 1.1.1
   source: test/source:latest
-  latest: true
   priority: -1
   aliases:
   - test/alias
+  tags:
+  - 1.1
+  - 1
+  - latest
+- name: two
+  version: "2.1"
+  source: test/source:latest
+  tags:
+  - latest
 - name: two
   version: "2.2"
   source: test/source:latest

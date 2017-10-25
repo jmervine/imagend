@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	VERSION = "0.0.1"
+	VERSION = "0.0.2"
 )
 
 var (
@@ -18,6 +18,7 @@ var (
 	tmpldir  = "templates"
 	manifile = "manifest.yml"
 
+	docs       bool
 	remove     bool
 	push       bool
 	pushOnly   bool
@@ -103,9 +104,19 @@ func main() {
 			Usage:       "verify images, same as '--skip-gen --skip-build --p=false -r=false'",
 			Destination: &verify,
 		},
+		cli.BoolFlag{
+			Name:        "docs",
+			Usage:       "generate markdown docs from your manifest, does nothing else",
+			Destination: &docs,
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
+		if docs {
+			manifest2markdown(manifile)
+			return nil
+		}
+
 		if verify {
 			skipBuild = true
 			skipGen = true

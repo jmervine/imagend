@@ -18,7 +18,7 @@ func Test_loadManifest(t *testing.T) {
 	assert := assert.New(t)
 
 	m := loadManifest(manifile)
-	assert.Equal(2, len(m))
+	assert.Equal(3, len(m))
 	assert.Equal("one", m[0].Name)
 	assert.Equal("two", m[1].Name)
 
