@@ -1,5 +1,5 @@
 ### `imagend` an (ima)ge (gen)erator for (d)docker
-
+---
 Generate many docker images from a manifest, using templates.
 
 ### Build / Install
@@ -57,13 +57,14 @@ key | description
 `tags` | A list of additional tags to be applied to this image, e.g. `latest`. _optional_
 
 
-#### The Template
+### The Template
 
 `imagend` uses Go's built in templating system to generate Dockefiles for use
 in building images.
 
-> **Perscriptive point;** Templates are required to follow the naming convention
-> of `Dockerfile.<image>.tmpl`, otherwise an error will be raised.
+> **Perscriptive point:**
+> Templates are required to follow the naming convention of
+> `Dockerfile.<image>.tmpl`, otherwise an error will be raised.
 
 You can pretty much do whatever you want inside a template. It will have access
 to everything that's in the [manifest.yml](manifest.yml.sample) file.
@@ -88,7 +89,7 @@ RUN \
 CMD /bin/bash
 ```
 
-
+---
 ### Development
 ```
 # w/ make
