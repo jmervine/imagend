@@ -1,0 +1,17 @@
+# WARNING
+# -------
+# This file is dynamically generated, do not edit!
+# See https://github.com/jmervine/imagend for generator details.
+
+# name: {{ .Name }}
+# version: {{ .Version }}
+FROM {{.Source}}
+
+{{if not .Native}}
+RUN \
+  echo "echo {{ .Version }}" > /usr/bin/{{ .Name }} && \
+  chmod 755 /usr/bin/{{ .Name }}
+{{ end }}
+
+CMD /bin/sh
+

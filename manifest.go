@@ -184,7 +184,7 @@ func (v *Version) verify() {
 	if v.Name != "base" {
 		for _, tag := range v.tags() {
 			log.Println("--- verifying: ", tag)
-			x := fmt.Sprintf("docker run --rm %s %s --version", tag, v.Name)
+			x := fmt.Sprintf("docker run --rm %s sh -c '%s --version'", tag, v.Name)
 			cmd := exec.Command("sh", "-c", x)
 			out, err := cmd.CombinedOutput()
 			if err != nil {

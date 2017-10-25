@@ -15,10 +15,5 @@ build:
 $(GOVENDOR):
 	go get -v github.com/kardianos/govendor
 
-#
-# find a better way
-run:
-	go run $(shell find . -name "*.go" -not -name "*_test.go" | grep -v "vendor")
-
-help:
-	go run $(shell find . -name "*.go" -not -name "*_test.go" | grep -v "vendor") -h
+samples:
+	imagend -m manifest.yml.sample -o _samples -r

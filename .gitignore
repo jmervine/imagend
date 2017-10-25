@@ -15,3 +15,5 @@
 
 bin
 manifest.md
+/log
+/sample*

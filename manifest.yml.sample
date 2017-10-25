@@ -18,22 +18,18 @@
 # - tags: list addtional tags to give this image, e.g. "latest"
 # -------------------------------------------------------------------------
 
-# base images
-- name: base
-  image: my/base
+- name: samplea
+  image: jmervine/sample
   version: 1.1.1
-  source: base_image_source:tag
+  source: alpine:latest
   priority: -1
   aliases:
-  - my/other-base
+  - jmervine/sample-image
   tags:
   - latest
   - 1.1
   - 1
 
-# sub-image
-- name: subimage
-  image: my/subimage
-  version: sub_image_version
-  source: base_image:base_image_version
-  #native: true
+- name: sampleb
+  version: 2
+  source: jmervine/sample:latest
