@@ -59,6 +59,10 @@ key | description
 `priority` | Determines image level build priority.This will only order by name, as duplicate names with varying versions/aliases are build concurrently. _optional_ / _default: 0_
 `aliases` | A list of other image names to use in addition to the primary name. If additional tags are set, the alias images will get them as well. _optional_
 `tags` | A list of additional tags to be applied to this image, e.g. `latest`. _optional_
+`verify:exec` | A command to execute in place of the default `<name> --version` for verification. _optional_
+`verify:expect` | A string to check against when verifying. _optional_
+`verify:exact` | By default, verification is based on the version being present in the returned output. This checks for an exact match. _optional_
+`verify:skip` | Force skip verification. _optional and may be removed_
 
 
 ### The Template
