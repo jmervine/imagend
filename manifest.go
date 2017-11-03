@@ -26,6 +26,12 @@ type Version struct {
 	Priority int      `yaml:"priority"`
 	Aliases  []string `yaml:"aliases"`
 	Tags     []string `yaml:"tags"`
+	Verify   struct {
+		Exec   string `yaml:"exec"`
+		Expect string `yaml:"expect"`
+		Exact  bool   `yaml:"exact"`
+		Skip   bool   `yaml:"skip"`
+	} `yaml:"verify"`
 }
 
 type Manifest []Version
@@ -181,10 +187,17 @@ func (v *Version) push() {
 }
 
 func (v *Version) verify() {
-	if v.Name != "base" {
+	if !v.Verify.Skip {
 		for _, tag := range v.tags() {
 			log.Println("--- verifying: ", tag)
-			x := fmt.Sprintf("docker run --rm %s sh -c '%s --version'", tag, v.Name)
+
+			var x string
+			if v.Verify.Exec != "" {
+				x = fmt.Sprintf("docker run --rm %s sh -c '%s'", tag, v.Verify.Exec)
+			} else {
+				x = fmt.Sprintf("docker run --rm %s sh -c '%s --version'", tag, v.Name)
+			}
+
 			cmd := exec.Command("sh", "-c", x)
 			out, err := cmd.CombinedOutput()
 			if err != nil {
@@ -192,7 +205,22 @@ func (v *Version) verify() {
 				log.Fatal("------- with: ", err.Error())
 			}
 
-			if strings.Contains(string(out), v.Version) {
+			check := v.Version
+			var pass bool
+
+			if v.Verify.Expect != "" {
+				check = v.Verify.Expect
+			}
+
+			if v.Verify.Exact {
+				if string(out) == check {
+					pass = true
+				}
+			} else {
+				pass = strings.Contains(string(out), check)
+			}
+
+			if pass {
 				log.Println("---- verified: ", tag)
 			} else {
 				log.Println("------ failure:", tag)
