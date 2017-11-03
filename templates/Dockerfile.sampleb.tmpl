@@ -7,11 +7,10 @@
 # version: {{ .Version }}
 FROM {{.Source}}
 
-{{if not .Native}}
+{{if not .Native -}}
 RUN \
-  echo "echo {{ .Version }}" > /usr/bin/{{ .Name }} && \
-  chmod 755 /usr/bin/{{ .Name }}
-{{end}}
+  echo "{{ .Name }}:{{ .Version }}" > /etc/{{ .Name }}
+{{ end }}
 
 CMD /bin/sh
 

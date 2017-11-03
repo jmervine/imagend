@@ -142,6 +142,11 @@ func (m Manifest) generate() {
 }
 
 func (v *Version) render() {
+	if exists(v.dockerfile()) {
+		log.Println("--- removing:", v.dockerfile())
+		os.Remove(v.dockerfile())
+	}
+
 	log.Println("--- rendering:", v.dockerfile())
 	t, err := tmpl.ParseFiles(v.template())
 	if err != nil {

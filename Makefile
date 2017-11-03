@@ -16,4 +16,6 @@ $(GOVENDOR):
 	go get -v github.com/kardianos/govendor
 
 samples:
-	imagend -m manifest.yml.sample -o _samples -r
+	go run \
+		$(shell find . -maxdepth 1 -type f -name "*.go" -not -name "*_test.go") \
+		-m manifest.yml.sample -o _samples -r

@@ -7,10 +7,8 @@
 # version: 2
 FROM jmervine/sample:latest
 
-
 RUN \
-  echo "echo 2" > /usr/bin/sampleb && \
-  chmod 755 /usr/bin/sampleb
+  echo "sampleb:2" > /etc/sampleb
 
 
 CMD /bin/sh

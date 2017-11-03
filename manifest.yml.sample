@@ -29,7 +29,14 @@
   - latest
   - 1.1
   - 1
+  verify:
+    exec: cat /etc/samplea
+    expect: "jmervine/sample:1.1.1\n"
+    exact: true
 
 - name: sampleb
   version: 2
   source: jmervine/sample:latest
+  verify:
+    exec: cat /etc/sampleb
+    expect: "sampleb:2"

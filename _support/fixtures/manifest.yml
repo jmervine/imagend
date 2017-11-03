@@ -17,3 +17,7 @@
 - name: two
   version: "2.2"
   source: test/source:latest
+  verify:
+    exec: cat /etc/two
+    expect: "two:2.2\n"
+    exact: true
