@@ -42,7 +42,6 @@
   tags:
   - latest
   - 2.1
-  - 2
   verify:
     exec: cat /etc/samplea
 
