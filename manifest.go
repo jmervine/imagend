@@ -49,15 +49,16 @@ func loadManifest(file string) Manifest {
 }
 
 func (m Manifest) builds() Manifest {
-	if image == "" && version == "" {
+	// build all
+	if len(images) == 0 && len(versions) == 0 {
 		return m
 	}
 
 	builds := make(Manifest, 0)
 
 	for _, v := range m {
-		if image != "" && (v.Name == image || v.Image == image) {
-			if version == "" || (version != "" && version == v.Version) {
+		if len(images) > 0 && containsAny(images, v.Name, v.Image) {
+			if len(versions) == 0 || containsAny(versions, v.Version) {
 				builds = append(builds, v)
 				continue
 			}
@@ -65,10 +66,10 @@ func (m Manifest) builds() Manifest {
 	}
 
 	if len(builds) == 0 {
-		if version != "" {
-			log.Fatal("ERROR requested version not found: ", version)
+		if len(versions) > 0 {
+			log.Fatal("ERROR requested version(s) not found: ", strings.Join(versions, ", "))
 		} else {
-			log.Fatal("ERROR requested image not found: ", image)
+			log.Fatal("ERROR requested image(s) not found: ", strings.Join(images, ", "))
 		}
 	}
 

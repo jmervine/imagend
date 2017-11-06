@@ -45,3 +45,16 @@ func expand(path string, mkdir bool) string {
 
 	return path
 }
+
+// containsAny returns true of the slice passed contains any of the strings passed
+//   cred: https://stackoverflow.com/a/10485970/832409
+func containsAny(h []string, n ...string) bool {
+	for _, a := range h {
+		for _, b := range n {
+			if a == b {
+				return true
+			}
+		}
+	}
+	return false
+}

@@ -47,7 +47,7 @@ func TestManifest_builds_with_image(t *testing.T) {
 
 	m := loadFixture()
 
-	image = "one"
+	images = []string{"one"}
 	defer reset()
 
 	b := m.builds()
@@ -57,34 +57,77 @@ func TestManifest_builds_with_image(t *testing.T) {
 	assert.Equal("one", b[0].Name)
 }
 
-func TestManifest_builds_with_invalid_image(t *testing.T) {
+func TestManifest_builds_with_images(t *testing.T) {
 	assert := assert.New(t)
 
 	monkey.Patch(log.Fatal, func(a ...interface{}) {
-		assert.Equal([]interface{}{"ERROR requested image not found: ", "missing"}, a)
+		assert.Fail("log.Fatal shouldn't have been called")
 	})
 	defer monkey.Unpatch(log.Fatal)
 
 	m := loadFixture()
 
-	image = "missing"
+	images = []string{"one", "two"}
+	defer reset()
+
+	b := m.builds()
+
+	assert.Equal(m, b)
+	assert.Equal(3, len(b))
+	assert.Equal("one", b[0].Name)
+}
+
+func TestManifest_builds_with_invalid_image(t *testing.T) {
+	assert := assert.New(t)
+
+	monkey.Patch(log.Fatal, func(a ...interface{}) {
+		assert.Equal([]interface{}{"ERROR requested image(s) not found: ", "missing"}, a)
+	})
+	defer monkey.Unpatch(log.Fatal)
+
+	m := loadFixture()
+
+	images = []string{"missing"}
 	defer reset()
 
 	m.builds()
+}
+
+func TestManifest_builds_with_versions(t *testing.T) {
+	assert := assert.New(t)
+
+	monkey.Patch(log.Fatal, func(a ...interface{}) {
+		assert.Fail("log.Fatal shouldn't have been called")
+	})
+	defer monkey.Unpatch(log.Fatal)
+
+	m := loadFixture()
+
+	images = []string{"two"}
+	versions = []string{"2.1", "2.2"}
+	defer reset()
+
+	b := m.builds()
+
+	m.builds()
+	assert.NotEqual(m, b)
+	assert.Equal(2, len(b))
+	assert.Equal("two", b[0].Name)
+	assert.Equal("two", b[1].Name)
 }
 
 func TestManifest_builds_with_invalid_version(t *testing.T) {
 	assert := assert.New(t)
 
 	monkey.Patch(log.Fatal, func(a ...interface{}) {
-		assert.Equal([]interface{}{"ERROR requested version not found: ", "missing"}, a)
+		assert.Equal([]interface{}{"ERROR requested version(s) not found: ", "missing"}, a)
 	})
 	defer monkey.Unpatch(log.Fatal)
 
 	m := loadFixture()
 
-	image = "one"
-	version = "missing"
+	images = []string{"one"}
+	versions = []string{"missing"}
 	defer reset()
 
 	m.builds()
@@ -186,6 +229,6 @@ func reset() {
 	tmpldir = path.Join("_support", "fixtures")
 	manifile = path.Join("_support", "fixtures", "manifest.yml")
 	outdir = os.TempDir()
-	image = ""
-	version = ""
+	images = make([]string, 0)
+	versions = make([]string, 0)
 }

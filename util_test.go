@@ -17,12 +17,20 @@ func Test_exists(t *testing.T) {
 	assert.True(exists(f))
 }
 
-func Test_expand_file(t *testing.T) {
+func Test_expand(t *testing.T) {
 	f := expand("_support/fixtures/manifest.yml", false)
 
 	assert := assert.New(t)
 	assert.True(strings.HasSuffix(f, "manifest.yml"))
 	assert.True(strings.HasPrefix(f, "/"))
+}
+
+func Test_containsAny(t *testing.T) {
+	assert := assert.New(t)
+	strings := []string{"a", "b", "c"}
+	assert.True(containsAny(strings, "x", "c"))
+	assert.True(containsAny(strings, "c", "x"))
+	assert.False(containsAny(strings, "x"))
 }
 
 func mkfile() string {

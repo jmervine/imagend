@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	VERSION = "0.0.4"
+	VERSION = "0.0.5"
 )
 
 var (
@@ -26,8 +26,8 @@ var (
 	skipBuild  bool
 	skipGen    bool
 
-	image   string
-	version string
+	images   []string
+	versions []string
 )
 
 func main() {
@@ -38,40 +38,40 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:        "o",
-			Usage:       "base directory for used in outputting generated Dockerfiles",
-			EnvVar:      "IMAGEND_OUTDIR",
+			Name:        "output,o",
+			Usage:       "output dir for generated Dockerfiles",
 			Value:       outdir,
 			Destination: &outdir,
 		},
 		cli.StringFlag{
-			Name:        "t",
-			Usage:       "dockerfile templates directory",
+			Name:        "target,t",
+			Usage:       "templates directory",
 			Destination: &tmpldir,
 			Value:       tmpldir,
-			EnvVar:      "IMAGEND_TEMPLATES",
 		},
 		cli.StringFlag{
-			Name:        "m",
-			Usage:       "manifest.yml file path",
+			Name:        "manifest,m",
+			Usage:       "manifest file path",
 			Destination: &manifile,
 			Value:       manifile,
-			EnvVar:      "IMAGEND_MANIFEST",
 		},
-		cli.StringFlag{
-			Name:        "i",
-			Usage:       "image (e.g. language or base) to build, empty builds all",
-			Destination: &image,
+		cli.StringSliceFlag{
+			Name:  "images,i",
+			Usage: "image names to build, empty builds all",
 		},
-		cli.StringFlag{
-			Name:        "V",
-			Usage:       "version to build, requires 'i' flag, empty builds all",
-			Destination: &version,
+		cli.StringSliceFlag{
+			Name:  "versions,V",
+			Usage: "versions to build, empty builds all",
 		},
 		cli.BoolFlag{
-			Name:        "r",
+			Name:        "remove,r",
 			Usage:       "remove, if they exists",
 			Destination: &remove,
+		},
+		cli.BoolFlag{
+			Name:        "push,p",
+			Usage:       "push images to docker hub",
+			Destination: &push,
 		},
 		cli.BoolFlag{
 			Name:        "skip-gen",
@@ -89,22 +89,17 @@ func main() {
 			Destination: &skipBuild,
 		},
 		cli.BoolFlag{
-			Name:        "p",
-			Usage:       "push images to docker hub",
-			Destination: &push,
-		},
-		cli.BoolFlag{
 			Name:        "push-only",
 			Usage:       "only push images, don't generate or build, will verify",
 			Destination: &pushOnly,
 		},
 		cli.BoolFlag{
-			Name:        "verify",
+			Name:        "verify,T",
 			Usage:       "verify images, same as '--skip-gen --skip-build --p=false -r=false'",
 			Destination: &verify,
 		},
 		cli.BoolFlag{
-			Name:        "docs",
+			Name:        "docs,D",
 			Usage:       "generate markdown docs from your manifest, does nothing else",
 			Destination: &docs,
 		},
@@ -132,8 +127,16 @@ func main() {
 		tmpldir = expand(tmpldir, false)
 		manifile = expand(manifile, false)
 
-		if image == "" && version != "" {
-			log.Println("--- ERROR image is required when a version is specified\n---")
+		images = c.StringSlice("images")
+		versions = c.StringSlice("versions")
+
+		if len(images) == 0 && len(versions) != 0 {
+			log.Println("--- ERROR image is required when versions are specified\n---")
+			cli.ShowAppHelpAndExit(c, 1)
+		}
+
+		if len(images) > 1 && len(versions) > 1 {
+			log.Println("--- ERROR a single image is required when versions are specified\n---")
 			cli.ShowAppHelpAndExit(c, 1)
 		}
 

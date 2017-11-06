@@ -22,17 +22,29 @@
   image: jmervine/sample
   version: 1.1.1
   source: alpine:latest
-  priority: -1
   aliases:
   - jmervine/sample-image
   tags:
-  - latest
   - 1.1
   - 1
   verify:
     exec: cat /etc/samplea
     expect: "jmervine/sample:1.1.1\n"
     exact: true
+
+- name: samplea
+  image: jmervine/sample
+  version: 2.1.1
+  source: alpine:latest
+  priority: -1
+  aliases:
+  - jmervine/sample-image
+  tags:
+  - latest
+  - 2.1
+  - 2
+  verify:
+    exec: cat /etc/samplea
 
 - name: sampleb
   version: 2
