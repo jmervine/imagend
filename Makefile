@@ -7,10 +7,10 @@ test: $(GOVENDOR) vet
 vet: $(GOVENDOR)
 	govendor vet +local
 
-install:
+install: $(GOVENDOR)
 	govendor install +local
 
-build:
+build: $(GOVENDOR)
 	govendor build -o ./bin/imagend -a +local
 
 $(GOVENDOR):
