@@ -108,7 +108,7 @@ func (m Manifest) generate() {
 		wg.Add(len(vers))
 
 		for _, ver := range vers {
-			go func(v Version) {
+			act := func(v Version) {
 				defer wg.Done()
 				log.Println("IMAGE:", v.tag())
 
@@ -135,7 +135,13 @@ func (m Manifest) generate() {
 				if push {
 					v.push()
 				}
-			}(ver)
+			}
+
+			if serialized {
+				act(ver)
+			} else {
+				go act(ver)
+			}
 		}
 
 		wg.Wait()

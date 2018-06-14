@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	VERSION = "0.0.5"
+	VERSION = "0.0.6"
 )
 
 var (
@@ -25,6 +25,7 @@ var (
 	skipVerify bool
 	skipBuild  bool
 	skipGen    bool
+	serialized bool
 
 	images   []string
 	versions []string
@@ -102,6 +103,11 @@ func main() {
 			Name:        "docs,D",
 			Usage:       "generate markdown docs from your manifest, does nothing else",
 			Destination: &docs,
+		},
+		cli.BoolFlag{
+			Name:        "serialized,s",
+			Usage:       "don't thread build, run all builds serialized",
+			Destination: &serialized,
 		},
 	}
 
